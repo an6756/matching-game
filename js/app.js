@@ -2,16 +2,17 @@
  * cards is an array variable to store the list of all cards, each card is
  *stored twice, we have a total of 16 cards
  */
- var cards = [
-   'fa-diamond', 'fa-diamond',
-   'fa-paper-plane-o', 'fa-paper-plane-o',
-   'fa-bolt', 'fa-bolt',
-   'fa-anchor', 'fa-anchor',
-   'fa-cube', 'fa-cube',
-   'fa-leaf', 'fa-leaf',
-   'fa-bomb', 'fa-bomb',
-   'fa-bicycle', 'fa-bicycle'
+ const symbols = [
+   'fa-diamond',
+   'fa-paper-plane-o',
+   'fa-bolt',
+   'fa-anchor',
+   'fa-cube',
+   'fa-leaf',
+   'fa-bomb',
+   'fa-bicycle'
  ];
+ const cards = symbols.concat(symbols);
 
 /* This fnction getHtmlForCard returns the html for each of the card prefixed
  * with a 'fa' string. This is a test.
@@ -26,10 +27,10 @@
  */
  function display(cards) {
    shuffle(cards);
-   var deck = $('.deck');
+   const deck = $('.deck');
    deck.empty();
    cards.forEach(function(card, index) {
-     var cardHtml = getHtmlForCard(card);
+     const cardHtml = getHtmlForCard(card);
      deck.append(cardHtml);
    });
  }
@@ -55,17 +56,21 @@ function shuffle(array) {
  * match (max 8), timeTaken to calculate time, and intervalid to calculate time
  * lapse
  */
-var openCards = [];
-var moveCounter = 0;
-var matchedCardCount = 0;
-var timeTaken = 0;
-var intervalId = null;
+let openCards = [];
+let moveCounter = 0;
+let matchedCardCount = 0;
+let timeTaken = 0;
+let intervalId = null;
+
+function getCardType(cardElem) {
+  return cardElem.children().attr('class').substr(3);
+}
 
 /* The function cardMatch is to check if the cards clicked (first and second
  * order) and returns true if there is a matcg
  */
 function cardsMatch() {
-  return openCards[0] === openCards[1];
+  return getCardType(openCards[0]) === getCardType(openCards[1]);
 }
 
 
@@ -74,8 +79,9 @@ function cardsMatch() {
  *the card passed is not in matched then enable the user to click
  */
 function lockCards(cardName) {
-  $('.' + openCards[0]).parent().addClass('match');
   $('.card').off('click');
+  openCards[0].addClass('match');
+  openCards[1].addClass('match');
   openCards = [];
   matchedCardCount += 1;
   $('.card').not('.match').click(cardClickListener);
@@ -116,7 +122,7 @@ function refreshGame() {
   updateMoveCounter();
   stopTimer();
   display(cards);
-  $( ".card" ).click(cardClickListener);
+  $('.card').click(cardClickListener);
 }
 
 /**
@@ -134,18 +140,18 @@ function stopTimer() {
  * the setTimeout after keeping the card open for 1000 secs
  */
 function closeOpenCards() {
-  var openCardElements = $('.card.open.show');
+  const card1 = openCards.shift();
+  const card2 = openCards.shift();
   setTimeout(function() {
-    openCardElements.removeClass('open show');
+    card1.removeClass('open show');
+    card2.removeClass('open show');
   }, 1000);
-  openCards = [];
 }
 
 /*function to add the card to open list of cards after each card is clicked,
 save them in an array opencards*/
 function addCardToOpenCardList(cardElem) {
-  var className = cardElem.children().attr('class').substr(3);
-  openCards.push(className);
+  openCards.push(cardElem);
 }
 
 /*function to update Timer and write out the time*/
@@ -158,7 +164,7 @@ function updateTimer() {
 on the variable score*/
 function updateMoveCounter() {
   $('.moves').text(moveCounter);
-  var score = 3;
+  let score = 3;
   if (moveCounter < 10) {
     score = 3;
   } else if (moveCounter < 20) {
@@ -166,9 +172,9 @@ function updateMoveCounter() {
   } else {
     score = 1;
   }
-  var starsElement = $('.stars');
+  const starsElement = $('.stars');
   starsElement.empty();
-  for (var i=1; i <= score; i++) {
+  for (let i=1; i <= score; i++) {
     starsElement.append('<li><i class="fa fa-star"></i></li>');
   }
 }
@@ -178,7 +184,7 @@ function startTimer() {
   if (intervalId !== null) {
     return;
   }
-  var startTime = Date.now();
+  const startTime = Date.now();
   intervalId = setInterval(function() {
     timeTaken = Math.round((Date.now() - startTime) / 1000);
     updateTimer();
@@ -206,11 +212,14 @@ function startTimer() {
   * increase the move counter for everymove and also update the moveCounter.
   */
  function cardClickListener(event) {
-   var cardClicked = $(event.target);
+   const cardClicked = $(event.target);
+   if (cardClicked.hasClass('open')) {
+     return;
+   }
    startTimer();
    showCardSymbol(cardClicked);
    addCardToOpenCardList(cardClicked);
-   if (openCards.length > 1) {
+   if (openCards.length === 2) {
      if (cardsMatch()) {
        lockCards()
        if (matchedCardCount >= 8) {
