@@ -70,6 +70,7 @@ function getCardType(cardElem) {
  * order) and returns true if there is a matcg
  */
 function cardsMatch() {
+  console.log(openCards);
   return getCardType(openCards[0]) === getCardType(openCards[1]);
 }
 
@@ -212,7 +213,9 @@ function startTimer() {
   * increase the move counter for everymove and also update the moveCounter.
   */
  function cardClickListener(event) {
-   const cardClicked = $(event.target);
+   event.stopPropagation();
+   let cardClicked = $(event.target);
+   cardClicked = cardClicked.hasClass('fa') ? cardClicked.parent(): cardClicked;
    if (cardClicked.hasClass('open')) {
      return;
    }
@@ -243,7 +246,7 @@ function startTimer() {
  **/
 function main() {
   display(cards);
-  $( ".card" ).click(cardClickListener);
+  $('.card').click(cardClickListener);
   $('.restart').click(refreshGame);
   $('#yesButton').click(handlePlayAgain);
   $('#noButton').click(handleCloseRequest);
